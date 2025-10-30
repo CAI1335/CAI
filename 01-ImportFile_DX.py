@@ -1,4 +1,4 @@
-#BSI 面单生成程序，使用中。
+# BSI 面单生成程序，使用中。
 
 import openpyxl
 import tkinter as tk
@@ -50,15 +50,29 @@ def DX_ImportFile():
         }
     }
 
-    root = tk.Tk()
-    root.withdraw()
-    source_file = filedialog.askopenfilename(title="选择源文件（source.xlsx）", filetypes=[("Excel files", "*.xlsx")])
-    if not source_file:
-        messagebox.showwarning("取消操作", "未选择源文件，程序终止。")
-        return
+    # 【修改开始】👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇
+    # 判断是否有图形界面环境（Codespaces 没有 DISPLAY）
+    if os.environ.get("DISPLAY", "") == "":
+        print("⚠️ 当前环境无图形界面（可能在 GitHub Codespaces 中）。")
+        print("请输入要处理的 Excel 源文件路径，例如：data/source.xlsx")
+        source_file = input("文件路径：").strip()
+        if not source_file or not os.path.exists(source_file):
+            print(f"❌ 找不到文件：{source_file}")
+            return
+        print(f"✅ 使用文件：{source_file}")
+    else:
+        root = tk.Tk()
+        root.withdraw()
+        source_file = filedialog.askopenfilename(
+            title="选择源文件（source.xlsx）",
+            filetypes=[("Excel files", "*.xlsx")]
+        )
+        if not source_file:
+            messagebox.showwarning("取消操作", "未选择源文件，程序终止。")
+            return
+    # 【修改结束】👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆
 
     source_dir = os.path.dirname(source_file)
-    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     timestamp = datetime.now().strftime("%Y%m%d")  # 只保留日期部分
     log_lines = []
 
@@ -78,7 +92,11 @@ def DX_ImportFile():
         for dtype, conf in CONFIG.items():
             template_path = conf['template']
             if not os.path.exists(template_path):
-                messagebox.showerror("错误", f"模板文件不存在：{template_path}")
+                # 【修改】GUI 环境下用弹窗；无 GUI 环境下用 print()
+                if os.environ.get("DISPLAY", "") == "":
+                    print(f"❌ 模板文件不存在：{template_path}")
+                else:
+                    messagebox.showerror("错误", f"模板文件不存在：{template_path}")
                 return
 
             tgt_wb = openpyxl.load_workbook(template_path)
@@ -150,13 +168,21 @@ def DX_ImportFile():
             f"{dtype}：写入 {write_rows[dtype] - TARGET_DATA_START} 行，已保存为\n{targets[dtype]['save_path']}"
             for dtype in write_rows
         ]) + f"\n\n日志已保存：{log_file}"
-        messagebox.showinfo("✅ 执行完成", msg)
+
+        # 【修改】根据环境决定用 messagebox 还是 print
+        if os.environ.get("DISPLAY", "") == "":
+            print("✅ 执行完成：")
+            print(msg)
+        else:
+            messagebox.showinfo("✅ 执行完成", msg)
 
     except Exception as e:
-        messagebox.showerror("错误", f"❌ 程序出错：\n{e}")
+        # 【修改】根据环境决定如何输出错误
+        if os.environ.get("DISPLAY", "") == "":
+            print(f"❌ 程序出错：{e}")
+        else:
+            messagebox.showerror("错误", f"❌ 程序出错：\n{e}")
 
 # 入口
 if __name__ == '__main__':
-
     DX_ImportFile()
-

@@ -50,18 +50,6 @@ def DX_ImportFile():
         }
     }
 
-    if os.environ.get("DISPLAY","") == "":
-        data_dir = "data"
-        files = glob.glob(os.path.join(data_dir, "*.xlsx"))
-        if files:
-            file_path = files[0]
-            print(f"✅ 自动使用文件: {file_path}")
-            return file_path
-        else:
-            file_path = input("请输入 Excel 文件路径: ").strip()
-            return file_path
-
-
     root = tk.Tk()
     root.withdraw()
     source_file = filedialog.askopenfilename(title="选择源文件（source.xlsx）", filetypes=[("Excel files", "*.xlsx")])
@@ -171,3 +159,4 @@ def DX_ImportFile():
 if __name__ == '__main__':
 
     DX_ImportFile()
+
